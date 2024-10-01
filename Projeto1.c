@@ -45,7 +45,62 @@ void exibirMenu() {
     printf("7. Atualizar cotacao\n");
     printf("8. Sair\n");
 }
+void depositarReais(Usuario *usuario, double valor) {
+            usuario->carteira.saldoBitcoin += valor / cotacao;
+        } else if (strcmp(tipo, "Ethereum") == 0) {
+            usuario->carteira.saldoEthereum += valor / cotacao;
+        } else if (strcmp(tipo, "Ripple") == 0) {
+            usuario->carteira.saldoRipple += valor / cotacao;
+        }
+        printf("Compra realizada: %.2f %s comprados com taxa de %.2f%%\n", valor / cotacao, tipo, taxa * 100);
+    } else {
+        printf("Saldo insuficiente para a compra.\n");
+    }
+}
 
+void venderCriptomoeda(Usuario *usuario, char tipo[], double valor, double cotacao, double taxa) {
+    double valorComTaxa = valor - (valor * taxa);
+    if (strcmp(tipo, "Bitcoin") == 0 && usuario->carteira.saldoBitcoin >= valor / cotacao) {
+        usuario->carteira.saldoBitcoin -= valor / cotacao;
+        usuario->carteira.saldoReais += valorComTaxa;
+        printf("Venda realizada: %.2f %s vendidos com taxa de %.2f%%\n", valor / cotacao, tipo, taxa * 100);
+    } else if (strcmp(tipo, "Ethereum") == 0 && usuario->carteira.saldoEthereum >= valor / cotacao) {
+        usuario->carteira.saldoEthereum -= valor / cotacao;
+        usuario->carteira.saldoReais += valorComTaxa;
+        printf("Venda realizada: %.2f %s vendidos com taxa de %.2f%%\n", valor / cotacao, tipo, taxa * 100);
+    } else if (strcmp(tipo, "Ripple") == 0 && usuario->carteira.saldoRipple >= valor / cotacao) {
+        usuario->carteira.saldoRipple -= valor / cotacao;
+        usuario->carteira.saldoReais += valorComTaxa;
+        printf("Venda realizada: %.2f %s vendidos com taxa de %.2f%%\n", valor / cotacao, tipo, taxa * 100);
+    } else {
+        printf("Saldo insuficiente para a venda.\n");
+    }
+}
+
+void atualizarCotacao(double bitcoin, double ethereum, double ripple, double* novoBitcoin, double* novoEthereum, double* novoRipple) {
+    srand(time(0));
+    *novoBitcoin = bitcoin + (bitcoin * ((rand() % 11 - 5) / 100.0));
+    *novoEthereum = ethereum + (ethereum * ((rand() % 11 - 5) / 100.0));
+    *novoRipple = ripple + (ripple * ((rand() % 11 - 5) / 100.0));
+}
+
+void salvarDados(Usuario usuarios[], int numUsuarios) {
+    FILE *file = fopen("carteiras.bin", "wb");
+    if (file != NULL) {
+        fwrite(usuarios, sizeof(Usuario), numUsuarios, file);
+        fclose(file);
+    } else {
+        printf("Erro ao salvar os dados.\n");
+    }
+}
+
+void carregarDados(Usuario usuarios[], int *numUsuarios) {
+    FILE *file = fopen("carteiras.bin", "rb");
+    if (file != NULL) {
+        *numUsuarios = fread(usuarios, sizeof(Usuario), MAX_USUARIOS, file);
+        fclose(file);
+    }
+}
 void gerarDataAtual(char buffer[]) {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
